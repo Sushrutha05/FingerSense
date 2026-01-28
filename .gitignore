@@ -1,0 +1,26 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Media outputs
+*.mp4
+*.avi
+*.mov
+*.png
+*.jpg
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+
+# Temporary / Test files
+*test*.*
+*playground*.*

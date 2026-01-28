@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 from collections import deque
 
-VOTE_WIN = 10
+VOTE_WIN = 12
 VOTE_NEED = 3
 gesture_history = deque(maxlen = VOTE_WIN)
 
@@ -46,7 +46,7 @@ with mp_hands.Hands(
                 is_up = 1 if norm_height > 0.6 else 0
                 finger_flags.append(is_up)
 
-            is_middle = (finger_flags == [0,0,1,0,0])
+            is_middle = (finger_flags == [0,0, 1,0, 0])
             gesture_history.append(is_middle)
             middle_confirmed = sum(gesture_history) >= VOTE_NEED
         else:
@@ -55,13 +55,13 @@ with mp_hands.Hands(
 
         if middle_confirmed:
             try:
-                xs = [int(landmarks[i].x * img_w) for i in [9,10,11,12]]
-                ys = [int(landmarks[i].y * img_h) for i in [9,10,11,12]]
+                xs = [int(landmarks[i].x * img_w) for i in range(0, 21)]
+                ys = [int(landmarks[i].y * img_h) for i in range(0, 21)]
 
-                x1, x2 = max(min(xs) - 20, 0), min(max(xs) + 20, img_w)
-                y1, y2 = max(min(ys) - 20, 0), min(max(ys) + 20, img_h)
+                x1, x2 = max(min(xs) - 30, 0), min(max(xs) + 30, img_w)
+                y1, y2 = max(min(ys) - 30, 0), min(max(ys) + 30, img_h)
 
-                pad = 5
+                pad = 8
                 x1_p = max(x1 - pad, 0)
                 x2_p = min(x2 + pad, img_w)
                 y1_p = max(y1 - pad, 0)
@@ -69,8 +69,11 @@ with mp_hands.Hands(
 
                 roi = frame[y1_p:y2_p, x1_p:x2_p]
                 if roi.size > 0:
-                    blur = cv2.GaussianBlur(roi, (99, 99), 0)
-                    frame[y1_p:y2_p, x1_p:x2_p]= blur
+                    h, w = roi.shape[:2]
+                    down_scaled = cv2.resize(roi, (w//4, h//4))
+                    blurred = cv2.GaussianBlur(down_scaled, (155, 155), 0)
+
+                    frame[y1_p:y2_p, x1_p:x2_p]= cv2.resize(blurred, (w, h))
                     cv2.putText(frame, "Middle Finger Detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
             except Exception as e:
@@ -78,7 +81,7 @@ with mp_hands.Hands(
         else:
             cv2.putText(frame, " ", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             
-        cv2.imshow('webcam', frame)
+        cv2.imshow('FingerSense', frame)
 
         if cv2.waitKey(5) & 0xFF == 27:
             break
